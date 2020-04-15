@@ -11,6 +11,19 @@ resources:
 - name: welcome
   type: git
   parameters:
+    url: "git@github.com:<your-github-username>/<your-git-repo-name>.git"
+    branch: "master"
+    
+- name: ztransform
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/tutorial-0-ztransform.git"
+    branch: "master"
+    
+# A resource named `welcome` that is a public git repo. All the fields here are required except branch, which defaults to master.
+- name: welcome
+  type: git
+  parameters:
     url: "git@github.com:krobbins95/welcome-resource.git"
     branch: "master"
 
@@ -35,7 +48,7 @@ spec:
     # Path where output data is stored within the `s3-bucket` -- can be anything you want
     - s3-key: tutorials/welcome/
 
-  # The steps of the workflow
+ # The steps of the workflow
   templates:
 
   # `salutations` is a template that just contains a list of `steps`, which are other templates
@@ -48,3 +61,14 @@ spec:
         arguments:
           parameters:
           - resources: [welcome]
+
+    # This template runs the `z-transformation` template in the `ztransform` resource
+    - - name: transform-welcome
+        template: z-transformation
+        arguments:
+          parameters:
+          - resources: [ztransform]
+          artifacts:
+          - name: message
+            # This template takes in the output artifact from the `welcome` template. 
+            from: '{{steps.greeting.outputs.artifacts.welcome}}'
